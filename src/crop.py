@@ -2,12 +2,12 @@ import cv2, math, os
 # import json
 
 ### read image ###
-img_name = 'lighthouse'
+img_name = 'student'
 img = cv2.imread("img/" + img_name + '.jpg', 1)
 src_height, src_width, src_channel = img.shape
 
 ### prepare the process ###
-size = 100
+size = 5
 width = src_width if (src_width < src_height) else src_height
 width = math.floor(width/size) * size
 height = width
