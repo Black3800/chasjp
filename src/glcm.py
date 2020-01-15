@@ -29,6 +29,30 @@ def get_gray_level(gray_val):
     return r
 
 
+def get_gray_level_output(gray_val):
+    arr = __GRAY_THRESHOLD
+    l, r = 0, 10
+    x = gray_val
+
+    while l <= r:
+        mid = int(l + (r - l) / 2)
+
+        # Check if x is present at mid
+        if arr[mid] == x:
+            return arr[mid]
+
+        # If x is greater, ignore left half
+        elif arr[mid] < x:
+            l = mid + 1
+
+        # If x is smaller, ignore right half
+        else:
+            r = mid - 1
+
+    # If we reach here, then the element was not present
+    return arr[r]
+
+
 def get_glcm_all_angle(file_path):
     ### return normalized glcm ###
     __DISTANCE = [1]
