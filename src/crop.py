@@ -2,7 +2,7 @@ import cv2, math, os
 # import json
 
 ### read image ###
-img_name = 'student'
+img_name = 'autumn'
 img = cv2.imread("img/" + img_name + '.jpg', 1)
 src_height, src_width, src_channel = img.shape
 
