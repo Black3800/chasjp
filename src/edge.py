@@ -1,61 +1,6 @@
 import cv2
 
 
-def get_left_most(file_path, file_path2):
-    img = cv2.imread(file_path, 0)
-    img2 = cv2.imread(file_path2, 0)
-    # cv2.imshow("first", img)
-    sigma = int(img.shape[0] * 0.028)
-    img = cv2.bilateralFilter(img, 100, sigma, sigma)
-    img2 = cv2.bilateralFilter(img2, 100, sigma, sigma)
-    # gray_level_map = numpy.vectorize(get_gray_level_output)
-    # leveled = numpy.array(gray_level_map(img), dtype=numpy.uint8)
-    right = img[:, -1]
-    left = img2[:, 0]
-    diff = []
-    diff2 = []
-    second = [0]
-    high = []
-    high2 = []
-    for i in range(0, img.shape[0]-1):
-
-        # change = ((right[i + 1][0] - right[i][0])**2 + (right[i + 1][1] - right[i][1])**2 + (right[i + 1][2] - right[i][2])**2)
-        # change2 = ((left[i + 1][0] - left[i][0])**2 + (left[i + 1][1] - left[i][1])**2 + (left[i + 1][2] - left[i][2])**2)
-        change = int(right[i+1]) - int(right[i])
-        change2 = int(left[i + 1]) - int(left[i])
-        diff.append(change)
-        diff2.append(change2)
-        if change > 40:
-            high.append(i)
-        if change2 > 40:
-            high2.append(i)
-
-    # for i in range(0, len(diff)-1):
-    #     second.append(int(diff[i+1]) - int(diff[i]))
-
-
-    print(high)
-    for x in high:
-        print(x, diff[x], "->", diff[x+1])
-
-    print("---")
-
-    print(high2)
-    for x in high2:
-        print(x, diff2[x], "->", diff2[x+1])
-    cv2.imshow("second", img)
-    cv2.imshow("second2", img2)
-    # plt.plot(diff, 'bo')
-    # plt.plot(diff2, 'go')
-    # plt.plot(second)
-    # plt.ylabel("some nums")
-    # plt.show()
-    # cv2.imshow("leftonly", right)
-    # print(diff)
-    # print(diff2)
-    cv2.waitKey()
-
-
 def get_left_edge(file_path):
     img = cv2.imread(file_path, 0)
     size = img.shape[0]
@@ -135,32 +80,40 @@ def get_bottom_edge(file_path):
 def clean_edge(edge):
     # merge edges that differ by 1
     # delList = []
-    for i in range(0, len(edge) - 2):
+    i = 0
+    while i < (len(edge) - 1):
         if abs(edge[i] - edge[i + 1]) == 1:
-            # delList.append(i)
             del edge[i]
             i -= 1
+        i += 1
+
     # for x in range(-1, -1*len(delList) - 1, -1):
     #     del edge[x+i+1]
     return edge
 
 
-def is_edge_match(edges1, edges2):
+def is_edge_match(edges1, edges2, fault = 0, penalty = 0):
     # Array subset problem:
     # O(m log m + n log n)
     # m = len(edges1)
     # n = len(edges2)
-    edges1 = clean_edge(edges1)
-    edges2 = clean_edge(edges2)
     len_edges1 = len(edges1)
     len_edges2 = len(edges2)
-    if len_edges1 + len_edges2 == 0:
+    threshold = 2
+    if len_edges1 + len_edges2 <= 1:
         return True
     elif len_edges1 > 0 and len_edges2 > 0:
         if len_edges1 == len_edges2:
             for i in range(0, len_edges1):
-                if edges1[i] != edges2[i]:
-                    return False
+                if abs(edges1[i] - edges2[i]) > threshold:
+                    print("↓-- ", edges1[i], " != ", edges2[i])
+                    fault += 1
+                    penalty += 1
+                    if edges1[i] < edges2[i]:
+                        del edges1[i]
+                    else:
+                        del edges2[i]
+                    return is_edge_match(edges1, edges2, fault, penalty)
             return True
         else:
             larger = edges1
@@ -174,15 +127,24 @@ def is_edge_match(edges1, edges2):
 
             i = 0
             j = 0
+            # print(i, j)
             while i < maximum and j < minimum:
-                if abs(larger[i] - smaller[j]) <= 1:
+                # print(i)
+                if abs(larger[i] - smaller[j]) <= threshold:
                     i += 1
                     j += 1
                 elif larger[i] < smaller[j]:
                     i += 1
                 elif larger[i] > smaller[j]:
-                    return False
+                    print("↓-- ", larger[i], " > ", smaller[j])
+                    j += 1
+                    fault += 1
+                    if fault/(minimum + penalty) > 0.2:
+                        print("↓-- ", fault/(minimum + penalty), ", fault over 0.2, return false")
+                        return False
+                    # return False
             return not (j < minimum)
+    # return True if > 80%
     return False
 
 
@@ -191,18 +153,20 @@ def is_edge_match(edges1, edges2):
 # print(get_right_edge("cropped/student/student_crop12.png"))
 # print(get_top_edge("cropped/student/student_crop21.png"))
 # print(get_bottom_edge("cropped/student/student_crop16.png"))
-print(is_edge_match(get_left_edge("cropped/student/student_crop13.png"),
-                    get_right_edge("cropped/student/student_crop12.png")))
-print(is_edge_match(get_top_edge("cropped/student/student_crop21.png"),
-                    get_bottom_edge("cropped/student/student_crop16.png")))
-print(is_edge_match(get_right_edge("cropped/lighthouse/lighthouse_crop14.png"),
-                    get_left_edge("cropped/lighthouse/lighthouse_crop15.png")))
-print(is_edge_match(get_bottom_edge("cropped/lighthouse/lighthouse_crop9.png"),
-                    get_top_edge("cropped/lighthouse/lighthouse_crop15.png")))
-print(get_top_edge("cropped/lighthouse/lighthouse_crop15.png"))
-print(get_bottom_edge("cropped/lighthouse/lighthouse_crop9.png"))
-print(clean_edge(get_top_edge("cropped/lighthouse/lighthouse_crop15.png")))
-print(clean_edge(get_bottom_edge("cropped/lighthouse/lighthouse_crop9.png")))
+
+# print(is_edge_match(get_left_edge("cropped/student/student_crop13.png"),
+#                     get_right_edge("cropped/student/student_crop12.png")))
+# print(is_edge_match(get_top_edge("cropped/student/student_crop21.png"),
+#                     get_bottom_edge("cropped/student/student_crop16.png")))
+# print(is_edge_match(get_right_edge("cropped/lighthouse/lighthouse_crop14.png"),
+#                     get_left_edge("cropped/lighthouse/lighthouse_crop15.png")))
+# print(is_edge_match(get_bottom_edge("cropped/cliff/cliff_crop19.png"),
+#                     get_top_edge("cropped/cliff/cliff_crop26.png")))
+# print(get_top_edge("cropped/cliff/cliff_crop26.png"))
+# print(get_bottom_edge("cropped/cliff/cliff_crop19.png"))
+# print(clean_edge(get_top_edge("cropped/cliff/cliff_crop26.png")))
+# print(clean_edge(get_bottom_edge("cropped/cliff/cliff_crop19.png")))
+
 # alpha = [1, 6, 9, 16, 18, 21, 25, 26]
 # beta = [1, 4, 9, 15, 18, 22]
 # print(alpha)
