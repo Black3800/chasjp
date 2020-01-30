@@ -100,13 +100,13 @@ def is_edge_match(edges1, edges2, fault = 0, penalty = 0):
     len_edges1 = len(edges1)
     len_edges2 = len(edges2)
     threshold = 2
-    if len_edges1 + len_edges2 <= 1:
+    if len_edges1 + len_edges2 == 0:
         return True
     elif len_edges1 > 0 and len_edges2 > 0:
         if len_edges1 == len_edges2:
             for i in range(0, len_edges1):
                 if abs(edges1[i] - edges2[i]) > threshold:
-                    print("↓-- ", edges1[i], " != ", edges2[i])
+                    # print("↓-- ", edges1[i], " != ", edges2[i])
                     fault += 1
                     penalty += 1
                     if edges1[i] < edges2[i]:
@@ -136,11 +136,11 @@ def is_edge_match(edges1, edges2, fault = 0, penalty = 0):
                 elif larger[i] < smaller[j]:
                     i += 1
                 elif larger[i] > smaller[j]:
-                    print("↓-- ", larger[i], " > ", smaller[j])
+                    # print("↓-- ", larger[i], " > ", smaller[j])
                     j += 1
                     fault += 1
                     if fault/(minimum + penalty) > 0.2:
-                        print("↓-- ", fault/(minimum + penalty), ", fault over 0.2, return false")
+                        # print("↓-- ", fault/(minimum + penalty), ", fault over 0.2, return false")
                         return False
                     # return False
             return not (j < minimum)
